@@ -26,7 +26,12 @@ pub fn decode(v: &Vec<u8>, n: usize) -> Vec<u8> {
         if index == n {
             index = 0;
             let sum: u8 = buffer.iter().sum();
-            let bit = if sum > (n as u8)/2 { 1 } else { 0 };
+            let bit = if n % 2 == 0 {
+                if sum == (n as u8)/2 { panic!("An error was detected that cannot be corrected") }
+                else if sum > (n as u8)/2 { 1 } else { 0 }
+            } else {
+                if sum > (n as u8)/2 { 1 } else { 0 }
+            };
             plain.push(bit == 1);
         }
     }
@@ -58,4 +63,22 @@ fn encode_test() {
     assert_eq!(encode(&test, 4), vec![0,0,255,255]);
     assert_eq!(encode(&test, 8), vec![0,0,0,0,255,255,255,255]);
     assert_eq!(encode(&other, 8), vec![255,0,0,0,0,0,0,0]);
+}
+
+#[test]
+fn error_correction_test() {
+    let test1: Vec<u8> = vec![17,8,254,255];
+    let test2: Vec<u8> = vec![4,8,2,129,127,254,253,255];
+    let test3: Vec<u8> = vec![127,1,2,4,8,16,32,64];
+    
+    assert_eq!(decode(&test1, 4), vec![15]);
+    assert_eq!(decode(&test2, 8), vec![15]);
+    assert_eq!(decode(&test3, 8), vec![128]);
+}
+
+#[test]
+#[should_panic]
+fn error_detection_test() {
+    let test: Vec<u8> = vec![2,254];
+    decode(&test, 2);
 }
