@@ -9,15 +9,16 @@ mod bitvec;
 fn main() {
     let mut number = 3;
     let mut encode = true;
-    {  // this block limits scope of borrows by ap.refer() method
+    {
         let mut ap = ArgumentParser::new();
         ap.set_description("");
         ap.refer(&mut encode)
             .add_option(&["-d", "--decode"], StoreFalse,
-            "Be verbose");
+            "use this flag to decode a file as opposed to encoding it");
         ap.refer(&mut number)
             .add_option(&["-n","--number"], Store,
-            "Name for the greeting");
+            "use this flag to specify the number of duplicate bits to use \
+             - odd numbers are more efficient than even numbers");
         ap.parse_args_or_exit();
     }
     
