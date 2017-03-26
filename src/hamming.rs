@@ -4,6 +4,17 @@ fn is_power_of_two(n: usize) -> bool {
     (n & (n - 1)) == 0
 }
 
+fn append(mut myself: BitVec, other: BitVec) -> BitVec {
+    let mut result = BitVec::from_elem(myself.len() + other.len(), false);
+    for i in 0..myself.len() {
+        result.set(i, myself[i]);
+    }
+    for i in 0..other.len() {
+        result.set(myself.len() + i, other[i]);
+    }
+    result
+}
+
 #[test]
 fn test_power_of_two() {
     // true
@@ -27,16 +38,13 @@ fn check(mut block: BitVec, p: usize) -> BitVec {
     for n in 0..p {
         // the index is 2 ^ n
         let pindex = 1 << n;
-        println!("Pindex: {}", pindex);
         let mut parity = false;
-        // we don't need to look at any indicies lower than pindex + 1
+        // we don't need to look at any indicies lower than pindex
         for i in (pindex)..block.len() {
-            println!("i: {}", i+1);
             // if this index has the nth bit set
             if pindex & (i+1) != 0 {
                 // xor its value with the parity value
                 parity = block[i] ^ parity;
-                println!("pr: {}", parity);
             }
         }
         // if the computed parity doesn't match the recorded parity, put it as an error
@@ -44,9 +52,7 @@ fn check(mut block: BitVec, p: usize) -> BitVec {
             errors.push(pindex);
         }
     }
-    
-    println!("Errors: {:?}", errors);
-    
+        
     // if there's one error, then the parity bit was wrong
     if errors.len() == 1 {
         let fix = ! block[errors[0]-1];
@@ -84,7 +90,6 @@ fn test_check_null() {
     corrupt1.push(false); // d 6
     corrupt1.push(false); // d 7
     
-    println!("null");
     assert_eq!(check(corrupt1, 3), perfect1);
 }
 
@@ -108,7 +113,6 @@ fn test_check_full() {
     corrupt.push(true); // d 6
     corrupt.push(true); // d 7
     
-    println!("full");
     assert_eq!(check(corrupt, 3), perfect);
 }
 
@@ -132,7 +136,6 @@ fn test_check() {
     corrupt.push(false); // d 6
     corrupt.push(false); // d 7
     
-    println!("normal");
     assert_eq!(check(corrupt, 3), perfect);
 }
 
@@ -221,7 +224,8 @@ fn parity(mut block: BitVec, p: usize) -> BitVec {
         // calculate 2^n
         let pindex = 1 << n;
         let mut parity = false;
-        for i in 0..block.len() {
+        // we don't need to look at any indicies lower than pindex
+        for i in (pindex)..block.len() {
             // if this index has the nth bit set
             if pindex & (i+1) != 0 {
                 // xor its value with the parity value
@@ -229,19 +233,63 @@ fn parity(mut block: BitVec, p: usize) -> BitVec {
             }
         }
         // set the 2^nth bit to the parity
-        block.set(pindex, parity);
+        block.set(pindex-1, parity);
     }
     block
+}
+
+#[test]
+fn test_parity() {
+    let mut after = BitVec::new();
+    after.push(true); // p 1
+    after.push(false); // p 2
+    after.push(true); // d 3
+    after.push(true); // p 4
+    after.push(false); // d 5
+    after.push(true); // d 6
+    after.push(false); // d 7
+
+    // all paritys are false
+    let mut before = BitVec::new();
+    before.push(false); // p 1
+    before.push(false); // p 2
+    before.push(true); // d 3
+    before.push(false); // p 4
+    before.push(false); // d 5
+    before.push(true); // d 6
+    before.push(false); // d 7
+    
+    assert_eq!(parity(before, 3), after);
+    
+    after = BitVec::new();
+    after.push(true); // p 1
+    after.push(false); // p 2
+    after.push(false); // d 3
+    after.push(true); // p 4
+    after.push(true); // d 5
+    after.push(false); // d 6
+    after.push(false); // d 7
+
+    before = BitVec::new();
+    before.push(false); // p 1
+    before.push(false); // p 2
+    before.push(false); // d 3
+    before.push(false); // p 4
+    before.push(true); // d 5
+    before.push(false); // d 6
+    before.push(false); // d 7
+        
+    assert_eq!(parity(before, 3), after);
 }
 
 fn arrange(plain: &BitVec, start: usize, p: usize) -> (usize, BitVec) {
     let mut block = BitVec::with_capacity((1 << p)-1);
     let mut index = start;
     // for each item in the block
-    for i in 1..((1 << p)+1) {
+    for i in 0..((1 << p)-1) {
         // if it's a power of two, reserve the bit for parity
         // and if we're at the end of the plaintext, just push 0.
-        if i & (i - 1) == 0 || index > plain.len() {
+        if is_power_of_two(i+1) || index > plain.len() {
             block.push(false);
         } else {
             // otherwise, push the next plaintext value
@@ -252,33 +300,88 @@ fn arrange(plain: &BitVec, start: usize, p: usize) -> (usize, BitVec) {
     (index,block)
 }
 
+#[test]
+fn test_arrange() {
+    let v = vec![18,42,5];
+    let plain = BitVec::from_bytes(&v);
+    
+    let mut arranged = BitVec::new();
+    arranged.push(false); // p 1
+    arranged.push(false); // p 2
+    arranged.push(false); // d 3
+    arranged.push(false); // p 4
+    arranged.push(false); // d 5
+    arranged.push(false); // d 6
+    arranged.push(true); // d 7
+
+    let (i, result) = arrange(&plain, 0, 3);
+
+    assert_eq!(result, arranged);
+    
+    arranged = BitVec::new();
+    arranged.push(false); // p 1
+    arranged.push(false); // p 2
+    arranged.push(false); // d 3
+    arranged.push(false); // p 4
+    arranged.push(false); // d 5
+    arranged.push(true); // d 6
+    arranged.push(false); // d 7
+    
+    let (i, result) = arrange(&plain, i, 3);
+    
+    assert_eq!(result, arranged);
+}
+
 pub fn encode(v: &Vec<u8>, p: usize) -> Vec<u8> {
     let plain = BitVec::from_bytes(&v);
     let mut code = BitVec::with_capacity(2 * plain.len());
     let mut index = 0;
+    println!("plain: {:?}", plain);
     while index < plain.len() {
-        let (i, b) = arrange(&plain, index, p);
-        let mut block = parity(b, p);
-        code.append(&mut block);
-        index = i;
+        let (new_index, temp_block) = arrange(&plain, index, p);
+        let block = parity(temp_block, p);
+        code = append(code, block);
+        index = new_index;
     }
     code.to_bytes()
 }
 
 pub fn decode(v: &Vec<u8>, p: usize) -> Vec<u8> {
     let code = BitVec::from_bytes(&v);
+    println!("code: {:?}", code);
     let mut plain = BitVec::with_capacity(code.len() / 2);
     let mut index = 0;
     let length = (1 << p) - 1;
-    while index < plain.len() {
+    while index < code.len() {
+        if index + length >= code.len() {
+            break;
+        }
         let mut block = BitVec::with_capacity(length);
         for i in index..(index+length) {
             block.push(code[i]);
         }
         block = check(block, p);
         block = assemble(block, p);
-        plain.append(&mut block);
+        plain = append(plain, block);
+        println!("plain: {:?}", plain);
         index = index+length;
+        println!("index: {}", index);
+        println!("len: {}", code.len());
     }
     plain.to_bytes()
+}
+
+#[test]
+fn test_inverse() {
+    let test1: Vec<u8> = vec![1,1,2,3,5,8,13,21,34];
+    let test2: Vec<u8> = vec![11,7,25];
+    let test3: Vec<u8> = vec![255,255,0,255,255,0];
+    let test4: Vec<u8> = vec![0,0,0];
+    let test5: Vec<u8> = vec![128,32,2];
+    
+    assert_eq!(decode(&encode(&test1, 3), 3), test1);
+    assert_eq!(decode(&encode(&test2, 3), 3), test2);
+    assert_eq!(decode(&encode(&test3, 3), 3), test3);
+    assert_eq!(decode(&encode(&test4, 3), 3), test4);
+    assert_eq!(decode(&encode(&test5, 3), 3), test5);
 }

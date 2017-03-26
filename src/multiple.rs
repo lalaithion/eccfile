@@ -40,7 +40,7 @@ pub fn decode(v: &Vec<u8>, n: usize) -> Vec<u8> {
 }
 
 #[test]
-fn inverse_test() {
+fn test_inverse() {
     let test1: Vec<u8> = vec![1,1,2,3,5,8,13,21,34];
     let test2: Vec<u8> = vec![11,7,25,1];
     let test3: Vec<u8> = vec![255,255,0,255,255];
@@ -55,7 +55,7 @@ fn inverse_test() {
 }
 
 #[test]
-fn encode_test() {
+fn test_encode() {
     let test: Vec<u8> = vec![15];
     let other: Vec<u8> = vec![128];
     
@@ -66,7 +66,7 @@ fn encode_test() {
 }
 
 #[test]
-fn error_correction_test() {
+fn test_error_correction() {
     let test1: Vec<u8> = vec![17,8,254,255];
     let test2: Vec<u8> = vec![4,8,2,129,127,254,253,255];
     let test3: Vec<u8> = vec![127,1,2,4,8,16,32,64];
@@ -78,7 +78,7 @@ fn error_correction_test() {
 
 #[test]
 #[should_panic]
-fn error_detection_test() {
+fn test_error_detection() {
     let test: Vec<u8> = vec![2,254];
     decode(&test, 2);
 }
