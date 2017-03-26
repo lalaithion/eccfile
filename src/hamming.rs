@@ -111,7 +111,6 @@ pub fn encode(v: &Vec<u8>, p: usize) -> Vec<u8> {
     let plain = BitVec::from_bytes(&v);
     let mut code = BitVec::with_capacity(2 * plain.len());
     let mut index = 0;
-    println!("plain: {:?}", plain);
     while index < plain.len() {
         let (new_index, temp_block) = arrange(&plain, index, p);
         let block = parity(temp_block, p);
@@ -123,7 +122,6 @@ pub fn encode(v: &Vec<u8>, p: usize) -> Vec<u8> {
 
 pub fn decode(v: &Vec<u8>, p: usize) -> Vec<u8> {
     let code = BitVec::from_bytes(&v);
-    println!("code: {:?}", code);
     let mut plain = BitVec::with_capacity(code.len() / 2);
     let mut index = 0;
     let length = (1 << p) - 1;
@@ -138,10 +136,7 @@ pub fn decode(v: &Vec<u8>, p: usize) -> Vec<u8> {
         block = check(block, p);
         block = assemble(block, p);
         plain = append(plain, block);
-        println!("plain: {:?}", plain);
         index = index+length;
-        println!("index: {}", index);
-        println!("len: {}", code.len());
     }
     plain.to_bytes()
 }
@@ -265,7 +260,6 @@ mod tests {
         corrupt.push(false); // d 6
         corrupt.push(false); // d 7
         
-        println!("normal");
         assert_eq!(check(corrupt, 3), perfect);
         
         perfect = BitVec::new();
@@ -286,7 +280,6 @@ mod tests {
         corrupt.push(false); // d 6
         corrupt.push(false); // d 7
         
-        println!("normal");
         assert_eq!(check(corrupt, 3), perfect);
     }
     
