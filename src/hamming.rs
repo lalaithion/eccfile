@@ -27,33 +27,38 @@ fn check(mut block: BitVec, p: usize) -> BitVec {
     for n in 0..p {
         // the index is 2 ^ n
         let pindex = 1 << n;
+        println!("Pindex: {}", pindex);
         let mut parity = false;
         // we don't need to look at any indicies lower than pindex + 1
         for i in (pindex)..block.len() {
+            println!("i: {}", i+1);
             // if this index has the nth bit set
             if pindex & (i+1) != 0 {
                 // xor its value with the parity value
                 parity = block[i] ^ parity;
+                println!("pr: {}", parity);
             }
         }
         // if the computed parity doesn't match the recorded parity, put it as an error
-        if parity != block[pindex] {
+        if parity != block[pindex-1] {
             errors.push(pindex);
         }
     }
-        
+    
+    println!("Errors: {:?}", errors);
+    
     // if there's one error, then the parity bit was wrong
     if errors.len() == 1 {
-        let fix = ! block[errors[0]];
-        block.set(errors[0], fix);
+        let fix = ! block[errors[0]-1];
+        block.set(errors[0]-1, fix);
     } else if errors.len() > 1 {
     // otherwise, add the parity indexes to get the value where they overlap, and flip it
         let mut errindex = 0;
         for i in errors {
             errindex += i;
         }
-        let fix = ! block[errindex];
-        block.set(errindex, fix);
+        let fix = ! block[errindex-1];
+        block.set(errindex-1, fix);
     }
     
     block
@@ -145,8 +150,29 @@ fn test_check_errors() {
     let mut corrupt = BitVec::new();
     corrupt.push(true); // p 1
     corrupt.push(true); // p 2
-    corrupt.push(true); // d 3
+    corrupt.push(false); // d 3
     corrupt.push(false); // p 4
+    corrupt.push(false); // d 5
+    corrupt.push(false); // d 6
+    corrupt.push(false); // d 7
+    
+    println!("normal");
+    assert_eq!(check(corrupt, 3), perfect);
+    
+    perfect = BitVec::new();
+    perfect.push(true); // p 1
+    perfect.push(false); // p 2
+    perfect.push(false); // d 3
+    perfect.push(true); // p 4
+    perfect.push(true); // d 5
+    perfect.push(false); // d 6
+    perfect.push(false); // d 7
+
+    corrupt = BitVec::new();
+    corrupt.push(true); // p 1
+    corrupt.push(false); // p 2
+    corrupt.push(false); // d 3
+    corrupt.push(true); // p 4
     corrupt.push(false); // d 5
     corrupt.push(false); // d 6
     corrupt.push(false); // d 7
@@ -187,7 +213,6 @@ fn test_assemble() {
     
     assert_eq!(assemble(code, 3), plain);
 }
-
 
 
 fn parity(mut block: BitVec, p: usize) -> BitVec {
