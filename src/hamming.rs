@@ -4,7 +4,7 @@ fn is_power_of_two(n: usize) -> bool {
     (n & (n - 1)) == 0
 }
 
-fn append(mut myself: BitVec, other: BitVec) -> BitVec {
+fn append(myself: BitVec, other: BitVec) -> BitVec {
     let mut result = BitVec::from_elem(myself.len() + other.len(), false);
     for i in 0..myself.len() {
         result.set(i, myself[i]);
@@ -13,23 +13,6 @@ fn append(mut myself: BitVec, other: BitVec) -> BitVec {
         result.set(myself.len() + i, other[i]);
     }
     result
-}
-
-#[test]
-fn test_power_of_two() {
-    // true
-    assert!(is_power_of_two(2));
-    assert!(is_power_of_two(4));
-    assert!(is_power_of_two(8));
-    assert!(is_power_of_two(1024));
-    assert!(is_power_of_two(4096));
-    
-    // false
-    assert!(!is_power_of_two(3));
-    assert!(!is_power_of_two(5));
-    assert!(!is_power_of_two(7));
-    assert!(!is_power_of_two(10));
-    assert!(!is_power_of_two(6));
 }
 
 fn check(mut block: BitVec, p: usize) -> BitVec {
@@ -70,119 +53,7 @@ fn check(mut block: BitVec, p: usize) -> BitVec {
     block
 }
 
-#[test]
-fn test_check_null() {
-    let mut perfect1 = BitVec::new();
-    perfect1.push(false); // p 1
-    perfect1.push(false); // p 2
-    perfect1.push(false); // d 3
-    perfect1.push(false); // p 4
-    perfect1.push(false); // d 5
-    perfect1.push(false); // d 6
-    perfect1.push(false); // d 7
 
-    let mut corrupt1 = BitVec::new();
-    corrupt1.push(false); // p 1
-    corrupt1.push(false); // p 2
-    corrupt1.push(false); // d 3
-    corrupt1.push(false); // p 4
-    corrupt1.push(false); // d 5
-    corrupt1.push(false); // d 6
-    corrupt1.push(false); // d 7
-    
-    assert_eq!(check(corrupt1, 3), perfect1);
-}
-
-#[test]
-fn test_check_full() {
-    let mut perfect = BitVec::new();
-    perfect.push(true); // p 1
-    perfect.push(true); // p 2
-    perfect.push(true); // d 3
-    perfect.push(true); // p 4
-    perfect.push(true); // d 5
-    perfect.push(true); // d 6
-    perfect.push(true); // d 7
-
-    let mut corrupt = BitVec::new();
-    corrupt.push(true); // p 1
-    corrupt.push(true); // p 2
-    corrupt.push(true); // d 3
-    corrupt.push(true); // p 4
-    corrupt.push(true); // d 5
-    corrupt.push(true); // d 6
-    corrupt.push(true); // d 7
-    
-    assert_eq!(check(corrupt, 3), perfect);
-}
-
-#[test]
-fn test_check() {
-    let mut perfect = BitVec::new();
-    perfect.push(true); // p 1
-    perfect.push(true); // p 2
-    perfect.push(true); // d 3
-    perfect.push(false); // p 4
-    perfect.push(false); // d 5
-    perfect.push(false); // d 6
-    perfect.push(false); // d 7
-
-    let mut corrupt = BitVec::new();
-    corrupt.push(true); // p 1
-    corrupt.push(true); // p 2
-    corrupt.push(true); // d 3
-    corrupt.push(false); // p 4
-    corrupt.push(false); // d 5
-    corrupt.push(false); // d 6
-    corrupt.push(false); // d 7
-    
-    assert_eq!(check(corrupt, 3), perfect);
-}
-
-#[test]
-fn test_check_errors() {
-    let mut perfect = BitVec::new();
-    perfect.push(true); // p 1
-    perfect.push(true); // p 2
-    perfect.push(true); // d 3
-    perfect.push(false); // p 4
-    perfect.push(false); // d 5
-    perfect.push(false); // d 6
-    perfect.push(false); // d 7
-
-    let mut corrupt = BitVec::new();
-    corrupt.push(true); // p 1
-    corrupt.push(true); // p 2
-    corrupt.push(false); // d 3
-    corrupt.push(false); // p 4
-    corrupt.push(false); // d 5
-    corrupt.push(false); // d 6
-    corrupt.push(false); // d 7
-    
-    println!("normal");
-    assert_eq!(check(corrupt, 3), perfect);
-    
-    perfect = BitVec::new();
-    perfect.push(true); // p 1
-    perfect.push(false); // p 2
-    perfect.push(false); // d 3
-    perfect.push(true); // p 4
-    perfect.push(true); // d 5
-    perfect.push(false); // d 6
-    perfect.push(false); // d 7
-
-    corrupt = BitVec::new();
-    corrupt.push(true); // p 1
-    corrupt.push(false); // p 2
-    corrupt.push(false); // d 3
-    corrupt.push(true); // p 4
-    corrupt.push(false); // d 5
-    corrupt.push(false); // d 6
-    corrupt.push(false); // d 7
-    
-    println!("normal");
-    assert_eq!(check(corrupt, 3), perfect);
-}
 
 fn assemble(block: BitVec, p: usize) -> BitVec {
     let mut result = BitVec::with_capacity((1 << p) - p - 1);
@@ -195,26 +66,6 @@ fn assemble(block: BitVec, p: usize) -> BitVec {
         }
     }
     result
-}
-
-#[test]
-fn test_assemble() {
-    let mut code = BitVec::new();
-    code.push(false); // p 1
-    code.push(true); // p 2
-    code.push(false); // d 3
-    code.push(false); // p 4
-    code.push(true); // d 5
-    code.push(false); // d 6
-    code.push(true); // d 7
-
-    let mut plain = BitVec::new();
-    plain.push(false); // d 3
-    plain.push(true); // d 5
-    plain.push(false); // d 6
-    plain.push(true); // d 7
-    
-    assert_eq!(assemble(code, 3), plain);
 }
 
 
@@ -238,50 +89,6 @@ fn parity(mut block: BitVec, p: usize) -> BitVec {
     block
 }
 
-#[test]
-fn test_parity() {
-    let mut after = BitVec::new();
-    after.push(true); // p 1
-    after.push(false); // p 2
-    after.push(true); // d 3
-    after.push(true); // p 4
-    after.push(false); // d 5
-    after.push(true); // d 6
-    after.push(false); // d 7
-
-    // all paritys are false
-    let mut before = BitVec::new();
-    before.push(false); // p 1
-    before.push(false); // p 2
-    before.push(true); // d 3
-    before.push(false); // p 4
-    before.push(false); // d 5
-    before.push(true); // d 6
-    before.push(false); // d 7
-    
-    assert_eq!(parity(before, 3), after);
-    
-    after = BitVec::new();
-    after.push(true); // p 1
-    after.push(false); // p 2
-    after.push(false); // d 3
-    after.push(true); // p 4
-    after.push(true); // d 5
-    after.push(false); // d 6
-    after.push(false); // d 7
-
-    before = BitVec::new();
-    before.push(false); // p 1
-    before.push(false); // p 2
-    before.push(false); // d 3
-    before.push(false); // p 4
-    before.push(true); // d 5
-    before.push(false); // d 6
-    before.push(false); // d 7
-        
-    assert_eq!(parity(before, 3), after);
-}
-
 fn arrange(plain: &BitVec, start: usize, p: usize) -> (usize, BitVec) {
     let mut block = BitVec::with_capacity((1 << p)-1);
     let mut index = start;
@@ -298,38 +105,6 @@ fn arrange(plain: &BitVec, start: usize, p: usize) -> (usize, BitVec) {
         }
     }
     (index,block)
-}
-
-#[test]
-fn test_arrange() {
-    let v = vec![18,42,5];
-    let plain = BitVec::from_bytes(&v);
-    
-    let mut arranged = BitVec::new();
-    arranged.push(false); // p 1
-    arranged.push(false); // p 2
-    arranged.push(false); // d 3
-    arranged.push(false); // p 4
-    arranged.push(false); // d 5
-    arranged.push(false); // d 6
-    arranged.push(true); // d 7
-
-    let (i, result) = arrange(&plain, 0, 3);
-
-    assert_eq!(result, arranged);
-    
-    arranged = BitVec::new();
-    arranged.push(false); // p 1
-    arranged.push(false); // p 2
-    arranged.push(false); // d 3
-    arranged.push(false); // p 4
-    arranged.push(false); // d 5
-    arranged.push(true); // d 6
-    arranged.push(false); // d 7
-    
-    let (i, result) = arrange(&plain, i, 3);
-    
-    assert_eq!(result, arranged);
 }
 
 pub fn encode(v: &Vec<u8>, p: usize) -> Vec<u8> {
@@ -371,17 +146,258 @@ pub fn decode(v: &Vec<u8>, p: usize) -> Vec<u8> {
     plain.to_bytes()
 }
 
-#[test]
-fn test_inverse() {
-    let test1: Vec<u8> = vec![1,1,2,3,5,8,13,21,34];
-    let test2: Vec<u8> = vec![11,7,25];
-    let test3: Vec<u8> = vec![255,255,0,255,255,0];
-    let test4: Vec<u8> = vec![0,0,0];
-    let test5: Vec<u8> = vec![128,32,2];
+#[cfg(test)]
+mod tests {
+    use super::*;
     
-    assert_eq!(decode(&encode(&test1, 3), 3), test1);
-    assert_eq!(decode(&encode(&test2, 3), 3), test2);
-    assert_eq!(decode(&encode(&test3, 3), 3), test3);
-    assert_eq!(decode(&encode(&test4, 3), 3), test4);
-    assert_eq!(decode(&encode(&test5, 3), 3), test5);
+    #[test]
+    fn power_of_two_works() {
+        // true
+        assert!(is_power_of_two(2));
+        assert!(is_power_of_two(4));
+        assert!(is_power_of_two(8));
+        assert!(is_power_of_two(1024));
+        assert!(is_power_of_two(4096));
+        
+        // false
+        assert!(!is_power_of_two(3));
+        assert!(!is_power_of_two(5));
+        assert!(!is_power_of_two(7));
+        assert!(!is_power_of_two(10));
+        assert!(!is_power_of_two(6));
+    }
+    
+    #[test]
+    fn append_works() {
+        let test: [u8;3] = [4,19,23];
+        let other: [u8;3] = [2,11,48];
+        let total: [u8;6] = [4,19,23,2,11,48];
+        
+        assert_eq!(BitVec::from_bytes(&total), append(BitVec::from_bytes(&test),BitVec::from_bytes(&other)))
+    }
+    
+    #[test]
+    fn check_null() {
+        let mut perfect1 = BitVec::new();
+        perfect1.push(false); // p 1
+        perfect1.push(false); // p 2
+        perfect1.push(false); // d 3
+        perfect1.push(false); // p 4
+        perfect1.push(false); // d 5
+        perfect1.push(false); // d 6
+        perfect1.push(false); // d 7
+
+        let mut corrupt1 = BitVec::new();
+        corrupt1.push(false); // p 1
+        corrupt1.push(false); // p 2
+        corrupt1.push(false); // d 3
+        corrupt1.push(false); // p 4
+        corrupt1.push(false); // d 5
+        corrupt1.push(false); // d 6
+        corrupt1.push(false); // d 7
+        
+        assert_eq!(check(corrupt1, 3), perfect1);
+    }
+
+    #[test]
+    fn check_full() {
+        let mut perfect = BitVec::new();
+        perfect.push(true); // p 1
+        perfect.push(true); // p 2
+        perfect.push(true); // d 3
+        perfect.push(true); // p 4
+        perfect.push(true); // d 5
+        perfect.push(true); // d 6
+        perfect.push(true); // d 7
+
+        let mut corrupt = BitVec::new();
+        corrupt.push(true); // p 1
+        corrupt.push(true); // p 2
+        corrupt.push(true); // d 3
+        corrupt.push(true); // p 4
+        corrupt.push(true); // d 5
+        corrupt.push(true); // d 6
+        corrupt.push(true); // d 7
+        
+        assert_eq!(check(corrupt, 3), perfect);
+    }
+
+    #[test]
+    fn check_perfect() {
+        let mut perfect = BitVec::new();
+        perfect.push(true); // p 1
+        perfect.push(true); // p 2
+        perfect.push(true); // d 3
+        perfect.push(false); // p 4
+        perfect.push(false); // d 5
+        perfect.push(false); // d 6
+        perfect.push(false); // d 7
+
+        let mut corrupt = BitVec::new();
+        corrupt.push(true); // p 1
+        corrupt.push(true); // p 2
+        corrupt.push(true); // d 3
+        corrupt.push(false); // p 4
+        corrupt.push(false); // d 5
+        corrupt.push(false); // d 6
+        corrupt.push(false); // d 7
+        
+        assert_eq!(check(corrupt, 3), perfect);
+    }
+    
+    #[test]
+    fn check_errors() {
+        let mut perfect = BitVec::new();
+        perfect.push(true); // p 1
+        perfect.push(true); // p 2
+        perfect.push(true); // d 3
+        perfect.push(false); // p 4
+        perfect.push(false); // d 5
+        perfect.push(false); // d 6
+        perfect.push(false); // d 7
+
+        let mut corrupt = BitVec::new();
+        corrupt.push(true); // p 1
+        corrupt.push(true); // p 2
+        corrupt.push(false); // d 3
+        corrupt.push(false); // p 4
+        corrupt.push(false); // d 5
+        corrupt.push(false); // d 6
+        corrupt.push(false); // d 7
+        
+        println!("normal");
+        assert_eq!(check(corrupt, 3), perfect);
+        
+        perfect = BitVec::new();
+        perfect.push(true); // p 1
+        perfect.push(false); // p 2
+        perfect.push(false); // d 3
+        perfect.push(true); // p 4
+        perfect.push(true); // d 5
+        perfect.push(false); // d 6
+        perfect.push(false); // d 7
+
+        corrupt = BitVec::new();
+        corrupt.push(true); // p 1
+        corrupt.push(false); // p 2
+        corrupt.push(false); // d 3
+        corrupt.push(true); // p 4
+        corrupt.push(false); // d 5
+        corrupt.push(false); // d 6
+        corrupt.push(false); // d 7
+        
+        println!("normal");
+        assert_eq!(check(corrupt, 3), perfect);
+    }
+    
+    #[test]
+    fn assemble_simple() {
+        let mut code = BitVec::new();
+        code.push(false); // p 1
+        code.push(true); // p 2
+        code.push(false); // d 3
+        code.push(false); // p 4
+        code.push(true); // d 5
+        code.push(false); // d 6
+        code.push(true); // d 7
+
+        let mut plain = BitVec::new();
+        plain.push(false); // d 3
+        plain.push(true); // d 5
+        plain.push(false); // d 6
+        plain.push(true); // d 7
+        
+        assert_eq!(assemble(code, 3), plain);
+    }
+    
+    #[test]
+    fn parity_simple() {
+        let mut after = BitVec::new();
+        after.push(true); // p 1
+        after.push(false); // p 2
+        after.push(true); // d 3
+        after.push(true); // p 4
+        after.push(false); // d 5
+        after.push(true); // d 6
+        after.push(false); // d 7
+
+        // all paritys are false
+        let mut before = BitVec::new();
+        before.push(false); // p 1
+        before.push(false); // p 2
+        before.push(true); // d 3
+        before.push(false); // p 4
+        before.push(false); // d 5
+        before.push(true); // d 6
+        before.push(false); // d 7
+        
+        assert_eq!(parity(before, 3), after);
+        
+        after = BitVec::new();
+        after.push(true); // p 1
+        after.push(false); // p 2
+        after.push(false); // d 3
+        after.push(true); // p 4
+        after.push(true); // d 5
+        after.push(false); // d 6
+        after.push(false); // d 7
+
+        before = BitVec::new();
+        before.push(false); // p 1
+        before.push(false); // p 2
+        before.push(false); // d 3
+        before.push(false); // p 4
+        before.push(true); // d 5
+        before.push(false); // d 6
+        before.push(false); // d 7
+            
+        assert_eq!(parity(before, 3), after);
+    }
+    
+    #[test]
+    fn arrange_simple() {
+        let v = vec![18,42,5];
+        let plain = BitVec::from_bytes(&v);
+        
+        let mut arranged = BitVec::new();
+        arranged.push(false); // p 1
+        arranged.push(false); // p 2
+        arranged.push(false); // d 3
+        arranged.push(false); // p 4
+        arranged.push(false); // d 5
+        arranged.push(false); // d 6
+        arranged.push(true); // d 7
+
+        let (i, result) = arrange(&plain, 0, 3);
+
+        assert_eq!(result, arranged);
+        
+        arranged = BitVec::new();
+        arranged.push(false); // p 1
+        arranged.push(false); // p 2
+        arranged.push(false); // d 3
+        arranged.push(false); // p 4
+        arranged.push(false); // d 5
+        arranged.push(true); // d 6
+        arranged.push(false); // d 7
+        
+        let (i, result) = arrange(&plain, i, 3);
+        
+        assert_eq!(result, arranged);
+    }
+    
+    #[test]
+    fn inverse() {
+        let test1: Vec<u8> = vec![1,1,2,3,5,8,13,21,34];
+        let test2: Vec<u8> = vec![11,7,25];
+        let test3: Vec<u8> = vec![255,255,0,255,255,0];
+        let test4: Vec<u8> = vec![0,0,0];
+        let test5: Vec<u8> = vec![128,32,2];
+        
+        assert_eq!(decode(&encode(&test1, 3), 3), test1);
+        assert_eq!(decode(&encode(&test2, 3), 3), test2);
+        assert_eq!(decode(&encode(&test3, 3), 3), test3);
+        assert_eq!(decode(&encode(&test4, 3), 3), test4);
+        assert_eq!(decode(&encode(&test5, 3), 3), test5);
+    }
 }
